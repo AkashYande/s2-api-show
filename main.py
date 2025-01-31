@@ -2,7 +2,7 @@ import sys
 import json
 import requests
 from PySide6.QtWidgets import QApplication, QTreeWidgetItem
-from config import Config
+from config.config import Config
 from ui.s2_ui import S2UI
 
 class S2ShowManager(S2UI):
