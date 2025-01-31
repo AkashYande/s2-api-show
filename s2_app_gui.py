@@ -170,6 +170,7 @@ class S2ShowManager(QMainWindow):
                             statuses.add(task.get('task_status'))
 
         extract_status(tasks_data)
+        
         return sorted(list(statuses))
 
     def update_status_filter(self, tasks_data):

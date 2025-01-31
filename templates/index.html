@@ -14,10 +14,10 @@
         }
         .show-card {
             border: 1px solid #ddd;
-            padding: 20px;
+            padding: 15px;
             border-radius: 8px;
             background-color: #f9f9f9;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         .show-title {
             color: #2c3e50;
@@ -25,8 +25,17 @@
             font-size: 1.2em;
         }
         .show-info {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .info-label {
+            font-weight: bold;
             color: #666;
-            margin: 5px 0;
+        }
+        .info-value {
+            color: #333;
         }
         .status-active {
             color: #27ae60;
@@ -105,112 +114,42 @@
     </style>
 </head>
 <body>
-    <h1>S2 Shows Directory</h1>
+    <h1>Active S2 Shows</h1>
     
     {% if error %}
     <div class="error">{{ error }}</div>
     {% endif %}
 
     <div class="show-count">
-        Total Shows: {{ shows|length }}
+        Total Active Shows: {{ shows|length }}
     </div>
 
     <div class="show-grid">
         {% for show in shows %}
         <div class="show-card">
-            <div class="show-header">
-                <h2 class="show-title">
-                    {{ show.title or show.show_name }}
-                    <span class="stage-badge stage-{{ show.stage }}">{{ show.stage }}</span>
-                </h2>
-            </div>
-            <div class="details-grid">
-                {% for key, value in show.items() %}
-                    <span class="detail-label">{{ key }}:</span>
-                    <span class="detail-value">
-                        {% if value is mapping or value is sequence %}
-                            <pre class="json-view">{{ value | tojson(indent=2) }}</pre>
-                        {% else %}
-                            {{ value if value is not none else 'N/A' }}
-                        {% endif %}
-                    </span>
-                {% endfor %}
+            <div class="show-info">
+                <span class="info-label">Show Name:</span>
+                <span class="info-value">{{ show.show_name }}</span>
+                
+                <span class="info-label">ID:</span>
+                <span class="info-value">{{ show.id }}</span>
+                
+                <span class="info-label">Status:</span>
+                <span class="info-value">{{ show.status }}</span>
             </div>
             <button onclick="window.location.href='/show/{{ show.id }}/tasks'" class="view-tasks">
                 View Tasks
             </button>
         </div>
         {% else %}
-        <p>No shows found.</p>
+        <p>No active shows found.</p>
         {% endfor %}
     </div>
 
+    <!-- Remove unused elements -->
     <div id="task-container" class="task-list hidden">
         <h2>Tasks</h2>
         <div id="task-list"></div>
     </div>
-
-    <script>
-        document.getElementById('show-select').addEventListener('change', async function(e) {
-            const showId = e.target.value;
-            const statusSelect = document.getElementById('status-select');
-            const taskContainer = document.getElementById('task-container');
-            const taskList = document.getElementById('task-list');
-
-            if (!showId) {
-                statusSelect.disabled = true;
-                taskContainer.classList.add('hidden');
-                return;
-            }
-
-            try {
-                const response = await fetch(`/show/${showId}/tasks`);
-                const data = await response.json();
-                
-                if (response.ok) {
-                    statusSelect.disabled = false;
-                    taskContainer.classList.remove('hidden');
-                    displayTasks(data);
-                } else {
-                    throw new Error(data.error || 'Failed to fetch tasks');
-                }
-            } catch (error) {
-                alert(error.message);
-            }
-        });
-
-        document.getElementById('status-select').addEventListener('change', function(e) {
-            const status = e.target.value;
-            filterTasks(status);
-        });
-
-        function displayTasks(tasks) {
-            const taskList = document.getElementById('task-list');
-            taskList.innerHTML = '';
-
-            tasks.forEach(task => {
-                const taskElement = document.createElement('div');
-                taskElement.className = 'show-item';
-                taskElement.dataset.status = task.status;
-                taskElement.innerHTML = `
-                    <h3>${task.name}</h3>
-                    <p>Status: ${task.status}</p>
-                    <p>Type: ${task.type}</p>
-                `;
-                taskList.appendChild(taskElement);
-            });
-        }
-
-        function filterTasks(status) {
-            const tasks = document.querySelectorAll('#task-list .show-item');
-            tasks.forEach(task => {
-                if (!status || task.dataset.status === status) {
-                    task.style.display = 'block';
-                } else {
-                    task.style.display = 'none';
-                }
-            });
-        }
-    </script>
 </body>
 </html>
